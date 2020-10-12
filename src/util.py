@@ -2,6 +2,7 @@ import datetime as dt
 import os
 import sys
 
+from src.get_info import *
 
 #Global
 global OS_NAME 
@@ -33,10 +34,10 @@ def get_index_list(stream_members_list):
 
 def eval_argv(argv):
 
-    valid_options_list = {'--help', '--eng', '--date', '--tomorrow', '--all'}
+    valid_options_list = {'--help', '--eng', '--date', '--tomorrow', '--all' , '--info'}
 
     #Options that is not available with other options
-    special_options = {'--help', '--date'}
+    special_options = {'--help', '--date' '--info'}
 
     #Options that is available to use other non special option at the same time
     non_special_options = {'--eng', '--tomorrow', '--all'}
@@ -146,6 +147,10 @@ def option_check(options):
         show_date()
         sys.exit()
 
+    if '--info' in options:
+        show_info()
+        sys.exit()
+
     if '--eng' in options:
         eng_flag = True
 
@@ -162,9 +167,6 @@ def replace_name(members_list, length):
 
     for i in range(length):
         members_list[i] = members_list[i].replace('Sub','サブ')
-        members_list[i] = members_list[i].replace('Risu','Ayunda Risu')
-        members_list[i] = members_list[i].replace('Moona','Moona Hoshinova')
-        members_list[i] = members_list[i].replace('Iofi','Airani Iofiteen')
 
     return members_list
 
@@ -215,3 +217,5 @@ def show_in_english(time_list, stream_members_list, stream_url_list):
 
         m_space = ' ' * ( (-1 * len(en_members_list[index_list[i]]) ) + 17)
         print('{}{}      {}~     {}{}  {}'.format(i, space, time_list[i], en_members_list[index_list[i]], m_space, stream_url_list[i]))
+
+    url = str(input("Enter stream URL: "))

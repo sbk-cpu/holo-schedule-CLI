@@ -1,4 +1,4 @@
-#Scrape today's schedule from Hololive official schedule
+#Scrape the schedule from Hololive official schedule
 
 import sys
 
