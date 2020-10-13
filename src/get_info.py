@@ -28,10 +28,16 @@ def fetch_from_url(url):
         print("An error occured!")
         sys.exit()
 
-    text_list = req.text.split('\n')[380:455]
+    text_list = req.text.split('\n')[379:455]
 
     #Delete null element and escape charactors and space in text_list
     text_list = tuple(map(lambda s: s.replace(' ', ''), text_list))
     text_list = tuple(map(lambda s: s.replace('\r', ''), text_list))
     text_list = tuple(map(lambda s: s.replace(' ', ''), text_list))
 
+    title = text_list[0]
+    #Form text
+    title = title.replace('<title>' , '')
+    title = title.replace('-YouTube</title>', '')
+
+    print("Title: {}".format(title))
