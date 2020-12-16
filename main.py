@@ -27,11 +27,11 @@ def main(options):
     time_list, stream_members_list, stream_url_list = scraping(source_html, all_flag)
     
     if est_flag:
-        est_convert(time_list, stream_members_list, stream_url_list)
+        est_convert(time_list, stream_members_list, stream_url_list, eng_flag)
         sys.exit()
     
     if eng_flag:
-        show_in_english(time_list, stream_members_list, stream_url_list)
+        show_in_english(time_list, stream_members_list, stream_url_list, est_flag)
         sys.exit()
     
     #All three lists have the same length
