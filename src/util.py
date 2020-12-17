@@ -2,11 +2,12 @@ import datetime as dt
 import os
 import sys
 import unicodedata
+import mpv
 
 #Global
-global OS_NAME 
+global OS_NAME
 OS_NAME = os.name
-
+player = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True, osc=True)
 
 def add_zero(num):
 
@@ -33,13 +34,13 @@ def get_index_list(stream_members_list):
 
 def eval_argv(argv):
 
-    valid_options_list = {'--help', '--eng', '--date', '--tomorrow', '--all', '--est'}
+    valid_options_list = {'--help', '--eng', '--date', '--tomorrow', '--all', '--est', '--mpv'}
 
     #Options that is not available with other options
     special_options = {'--help', '--date'}
 
     #Options that is available to use other non special option at the same time
-    non_special_options = {'--eng', '--tomorrow', '--all', '--est'}
+    non_special_options = {'--eng', '--tomorrow', '--all', '--est', '--mpv'}
 
     s_flag = 0
     n_flag = False
@@ -50,7 +51,7 @@ def eval_argv(argv):
             return None
 
         if option in special_options:
-            s_flag += 1 
+            s_flag += 1
 
         if option in non_special_options:
             n_flag = True
@@ -138,6 +139,7 @@ def option_check(options):
     tomorrow_flag = False
     all_flag = False
     est_flag = False
+    mpv_flag = False
 
     if '--help' in options:
         show_help()
@@ -159,8 +161,11 @@ def option_check(options):
     if '--est' in options:
         est_flag = True
 
-    return (eng_flag, tomorrow_flag, all_flag, est_flag)
-        
+    if '--mpv' in options:
+        mpv_flag = True
+
+    return (eng_flag, tomorrow_flag, all_flag, est_flag, mpv_flag)
+
 
 def replace_name(members_list, length):
 
@@ -188,7 +193,7 @@ def show_date():
 def show_help():
 
     with open('text/help', 'r') as f:
-        
+
         l = f.read().split('\n')
 
         #Remove the message
@@ -197,9 +202,26 @@ def show_help():
         for line in l:
             print(line)
 
+#User Input mpv
+def mpv_input(stream_url_list, mpv_flag):
+    while mpv_flag == True:
+        try:
+            stream_position = int(input("Enter Index #: "))
+            break
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+    stream_position -= 1
+    mpv_url_temp = []
+    mpv_url_temp.append(stream_url_list.pop(stream_position))
+    stream_url = " "
+    stream_url = (stream_url.join(mpv_url_temp))
+    print(stream_url)
+    player.play(stream_url)
+    player.wait_for_playback()
 #Show EST
 
-def est_convert(time_list, stream_members_list, stream_url_list, eng_flag):
+def est_convert(time_list, stream_members_list, stream_url_list, eng_flag, mpv_flag):
 
    hours_list = [i.split(':')[0] for i in time_list]
    minutes_list = [i.split(':')[1] for i in time_list]
@@ -208,7 +230,7 @@ def est_convert(time_list, stream_members_list, stream_url_list, eng_flag):
    time_list_est = []
 
 
-   for x in hours_list:  
+   for x in hours_list:
        if x <= 13:
            x += 10
            x = str(x)
@@ -221,12 +243,12 @@ def est_convert(time_list, stream_members_list, stream_url_list, eng_flag):
        temp_list.append(minutes_list.pop())
        temp_list = ":".join(temp_list)
        time_list_est.append(temp_list)
-    
+
    lists_length = len(time_list)
 
 
    if eng_flag:
-       show_in_english(time_list_est, stream_members_list, stream_url_list, True)
+       show_in_english(time_list_est, stream_members_list, stream_url_list, True, mpv_flag)
        sys.exit()
 
    else:
@@ -251,20 +273,20 @@ def est_convert(time_list, stream_members_list, stream_url_list, eng_flag):
 
         print('{}{}      {}~     {}{}  {}'.format(i+1, space, time_list_est[i], stream_members_list[i], m_space, stream_url_list[i]))
 
-
-   
+   if mpv_flag:
+       mpv_input(stream_url_list, True)
 
 #Show the schedule list in English
-def show_in_english(time_list, stream_members_list, stream_url_list, est_flag):
+def show_in_english(time_list, stream_members_list, stream_url_list, est_flag, mpv_flag):
 
     en_members_list = get_en_list()
     index_list = get_index_list(stream_members_list)
-    
+
     if est_flag:
      print('Index   Time(EST)  Member             Streaming URL')
     else:
      print('Index   Time(JST)  Member             Streaming URL')
-   
+
    #All three lists have the same length
     lists_length = len(time_list)
 
@@ -278,3 +300,5 @@ def show_in_english(time_list, stream_members_list, stream_url_list, est_flag):
 
         m_space = ' ' * ( (-1 * len(en_members_list[index_list[i]]) ) + 17)
         print('{}{}      {}~     {}{}  {}'.format(i, space, time_list[i], en_members_list[index_list[i]], m_space, stream_url_list[i]))
+    if mpv_flag:
+        mpv_input(stream_url_list, True)
