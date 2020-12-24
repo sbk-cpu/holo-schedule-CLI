@@ -3,6 +3,7 @@ import os
 import sys
 import unicodedata
 import mpv
+import webbrowser
 
 #Global
 global OS_NAME
@@ -34,13 +35,13 @@ def get_index_list(stream_members_list):
 
 def eval_argv(argv):
 
-    valid_options_list = {'--help', '--eng', '--date', '--tomorrow', '--all', '--est', '--mpv'}
+    valid_options_list = {'--help', '--eng', '--date', '--tomorrow', '--all', '--est', '--mpv', '--browser'}
 
     #Options that is not available with other options
     special_options = {'--help', '--date'}
 
     #Options that is available to use other non special option at the same time
-    non_special_options = {'--eng', '--tomorrow', '--all', '--est', '--mpv'}
+    non_special_options = {'--eng', '--tomorrow', '--all', '--est', '--mpv', '--browser'}
 
     s_flag = 0
     n_flag = False
@@ -140,7 +141,8 @@ def option_check(options):
     all_flag = False
     est_flag = False
     mpv_flag = False
-
+    browser_flag = False
+    
     if '--help' in options:
         show_help()
         sys.exit()
@@ -164,7 +166,9 @@ def option_check(options):
     if '--mpv' in options:
         mpv_flag = True
 
-    return (eng_flag, tomorrow_flag, all_flag, est_flag, mpv_flag)
+    if '--browser' in options:
+        browser_flag = True
+    return (eng_flag, tomorrow_flag, all_flag, est_flag, mpv_flag, browser_flag)
 
 
 def replace_name(members_list, length):
@@ -202,11 +206,27 @@ def show_help():
         for line in l:
             print(line)
 
+
+#User Input browser
+def browser_input(stream_url_list, browser_flag):
+    while browser_flag == True:
+        try:
+            stream_position = int(input("Enter Index #:"))
+            break
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+    stream_position -= 1
+    b_url_temp = []
+    b_url_temp.append(stream_url_list.pop(stream_position))
+    stream_url = " "
+    stream_url = (stream_url.join(b_url_temp))
+    webbrowser.open(stream_url, new = 2)
 #User Input mpv
 def mpv_input(stream_url_list, mpv_flag):
     while mpv_flag == True:
         try:
-            stream_position = int(input("Enter Index #: "))
+            stream_position = int(input("Enter Index #:"))
             break
         except ValueError:
             print("Please enter a valid number.")
@@ -216,12 +236,11 @@ def mpv_input(stream_url_list, mpv_flag):
     mpv_url_temp.append(stream_url_list.pop(stream_position))
     stream_url = " "
     stream_url = (stream_url.join(mpv_url_temp))
-    print(stream_url)
     player.play(stream_url)
     player.wait_for_playback()
 #Show EST
 
-def est_convert(time_list, stream_members_list, stream_url_list, eng_flag, mpv_flag):
+def est_convert(time_list, stream_members_list, stream_url_list, eng_flag, mpv_flag, browser_flag):
 
    hours_list = [i.split(':')[0] for i in time_list]
    minutes_list = [i.split(':')[1] for i in time_list]
@@ -272,12 +291,13 @@ def est_convert(time_list, stream_members_list, stream_url_list, eng_flag, mpv_f
             m_space = ' ' * ( (-1 * len(stream_members_list[i]) ) + 18)
 
         print('{}{}      {}~     {}{}  {}'.format(i+1, space, time_list_est[i], stream_members_list[i], m_space, stream_url_list[i]))
-
+   if browser_flag:
+       browser_input(stream_url_list, True)
    if mpv_flag:
        mpv_input(stream_url_list, True)
 
 #Show the schedule list in English
-def show_in_english(time_list, stream_members_list, stream_url_list, est_flag, mpv_flag):
+def show_in_english(time_list, stream_members_list, stream_url_list, est_flag, mpv_flag, browser_flag):
 
     en_members_list = get_en_list()
     index_list = get_index_list(stream_members_list)
@@ -300,5 +320,8 @@ def show_in_english(time_list, stream_members_list, stream_url_list, est_flag, m
 
         m_space = ' ' * ( (-1 * len(en_members_list[index_list[i]]) ) + 17)
         print('{}{}      {}~     {}{}  {}'.format(i, space, time_list[i], en_members_list[index_list[i]], m_space, stream_url_list[i]))
+
+    if browser_flag:
+        browser_input(stream_url_list, True)
     if mpv_flag:
         mpv_input(stream_url_list, True)
